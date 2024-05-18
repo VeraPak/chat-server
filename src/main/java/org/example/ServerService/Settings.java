@@ -15,14 +15,14 @@ public class Settings {
     private static JSONParser parser = null;
     private static Object obj = null;
     private static JSONObject jsonObject = null;
-    private static JSONObject server = null;
+    private static JSONObject data = null;
 
     private Settings() {
         parser = new JSONParser();
         try (FileReader reader = new FileReader(SETTINGS_FILE)) {
             obj = parser.parse(reader);
             jsonObject = (JSONObject) obj;
-            server = (JSONObject) jsonObject.get("server");
+            data = (JSONObject) jsonObject.get("server");
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -40,12 +40,12 @@ public class Settings {
     }
 
     public int getPort() {
-        Long port = (Long) server.get("port");
+        Long port = (Long) data.get("port");
         return port.intValue();
     }
 
     void setPort(Long port) {
-        server.put("port", port);
+        data.put("port", port);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(SETTINGS_FILE))) {
             writer.write(jsonObject.toString());
         } catch (IOException e) {

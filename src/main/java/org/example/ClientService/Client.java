@@ -1,30 +1,33 @@
 package org.example.ClientService;
 
 import org.example.MyLogger;
+import org.example.ServerService.Settings;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client implements Runnable {
+public class Client extends Thread {
+    private static final int PORT = Settings.getInstance().getPort();
+    private static final String HOST_NAME = "localhost";
     private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
     private Logger logger;
-
-    public Client(String hostname, int port) {
+    public Client() {
         try {
-            clientSocket = new Socket(hostname, port);
+            clientSocket = new Socket(HOST_NAME, PORT);
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             logger = MyLogger.getInstance().getLogger();
             logger.log(Level.INFO, "Новый клиент создан");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Ошибка создания клиента", e);
             close();
         }
     }
@@ -35,7 +38,7 @@ public class Client implements Runnable {
             String input;
             try {
                 while ((input = in.readLine()) != null) {
-                    System.out.println(input);
+                    System.out.printf("%s [%s]\n", input, LocalDateTime.now());
                 }
             } catch (IOException e) {
                 close();
@@ -47,7 +50,8 @@ public class Client implements Runnable {
             try (BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in))) {
                 while (!clientSocket.isClosed()) {
                     String message = consoleReader.readLine();
-                    out.println(message);
+                    System.out.printf("YOU: %s [%s]\n", message, LocalDateTime.now());
+                    out.printf("%s \n", message);
                     if ("/exit".equals(message)) {
                         consoleReader.close();
                         close();
